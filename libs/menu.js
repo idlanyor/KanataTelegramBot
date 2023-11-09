@@ -15,7 +15,30 @@ const menu = {
         "/yts Youtube search",
         "/ytv Youtube Video downloader",
         "/yta Youtube Audio downloader",
-    ]
+    ],
+    edukasi: [
+        "/br Dapatkan jawaban pertanyaan dari Brainly ",
+        "/kbbi Kamus besar bahasa Indonesia",
+        "/wiki dapatkan informasi dari WikiPedia",
+        "/tr Translate multi bahasa ",
+        "/ocr menerjemahkan gambar ke teks",
+        "/pddikti iformasi mahasiswa dari PDDikti(coming soon)",
+    ],
+    entertainment: [
+        "/ "
+    ],
+    gambar: [
+        "/ "
+    ],
+    random: [
+        "/ "
+    ],
+    anime: [
+        "/ "
+    ],
+    game: [
+        "/ "
+    ],
 }
 module.exports = {
     menu
