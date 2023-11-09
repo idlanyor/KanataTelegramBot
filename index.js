@@ -124,7 +124,7 @@ bot.on('message', async (msg) => {
                     return;
                 }
                 try {
-                    const apiUrl = ''; // Isi dengan URL yang sesuai
+                    const apiUrl = '';
                     result = await performAxiosRequest(apiUrl);
                     bot.sendMessage(chatId, replyText);
                 } catch (error) {
@@ -161,7 +161,20 @@ bot.on('message', async (msg) => {
                             const apiUrl = `https://api.lolhuman.xyz/api/sholat/${cityName}?apikey=oratidokan`;
                             result = await apiHelper(apiUrl);
                             console.log(result)
-                            replyText = `Wilayah : `
+                            let replyText = 'Jadwal shalat ' + result.result.wilayah + '\n';
+                            replyText += '  Tanggal: ' + result.result.tanggal + '\n';
+                            replyText += '  Sahur: ' + result.result.sahur + '\n';
+                            replyText += '  Imsak: ' + result.result.imsak + '\n';
+                            replyText += '  Subuh: ' + result.result.subuh + '\n';
+                            replyText += '  Terbit: ' + result.result.terbit + '\n';
+                            replyText += '  Dhuha: ' + result.result.dhuha + '\n';
+                            replyText += '  Dzuhur: ' + result.result.dzuhur + '\n';
+                            replyText += '  Ashar: ' + result.result.ashar + '\n';
+                            replyText += '  Maghrib: ' + result.result.maghrib + '\n';
+                            replyText += '  Isya: ' + result.result.isya + '\n';
+
+                            console.log(replyText);
+
                             bot.sendMessage(chatId, replyText);
                         } catch (error) {
                             bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
