@@ -1,6 +1,9 @@
+const fs = require('fs')
+const rawCfg = fs.readFileSync('config.json')
+const cfg = JSON.parse(rawCfg);
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios')
-const token = 'y:oratidokan';
+const token = cfg.apiTele;
 const { menu } = require('./libs/menu.js')
 
 const bot = new TelegramBot(token, { polling: true });
@@ -77,10 +80,9 @@ bot.on('callback_query', (query) => {
     }
 });
 // helper axios
-const apiHelper = async (url) => {
+const apiHelperLol = async (endpoint, query) => {
     try {
-        const response = await axios.get(url);
-        console.log(response.data)
+        const response = await axios.get(`${cfg.urlLol}/${endpoint}?apikey=${cfg.apiLol}`);
         return response.data.result;
     } catch (e) {
         console.error('Error: ', e);
@@ -103,7 +105,7 @@ bot.on('message', async (msg) => {
                 break
             case '/99':
                 try {
-                    result = await apiHelper("https://api.lolhuman.xyz/api/asmaulhusna?apikey=oratidokan");
+                    result = await apiHelperLol("asmaulhusna");
                     replyText = `Indeks: ${result.index}\nLatin: ${result.latin}\nArab: ${result.ar}\nID: ${result.id}\nEN: ${result.en}`;
                     bot.sendMessage(chatId, replyText);
                 } catch (error) {
@@ -133,58 +135,55 @@ bot.on('message', async (msg) => {
                 break;
             case '/js':
                 // Meminta lokasi pengguna
-                bot.sendMessage(chatId, 'Silakan kirimkan lokasi Anda.', {
-                    reply_markup: {
-                        keyboard: [
-                            [{
-                                text: 'Kirim Lokasi',
-                                request_location: true,
-                            }],
-                        ],
-                        resize_keyboard: true,
-                    },
-                });
-                bot.on('location', async (msg) => {
-                    const chatId = msg.chat.id;
-                    const latitude = msg.location.latitude;
-                    const longitude = msg.location.longitude;
-
-                    // Menggunakan API pihak ketiga untuk mendapatkan nama kota berdasarkan koordinat
-                    try {
-                        const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json?key="oratidokan"&q=${latitude}+${longitude}`);
-                        console.log(response.data.results[0].components.county)
-                        const cityName = response.data.results[0].components.county;
-
-                        // Menampilkan nama kota
-                        // bot.sendMessage(chatId, `Anda berada di kota ${cityName}. \n Lat : ${latitude} \nLong : ${longitude}`);
-                        try {
-                            const apiUrl = `https://api.lolhuman.xyz/api/sholat/${cityName}?apikey=oratidokan`;
-                            result = await apiHelper(apiUrl);
-                            console.log(result)
-                            let replyText = 'Jadwal shalat ' + result.result.wilayah + '\n';
-                            replyText += '  Tanggal: ' + result.result.tanggal + '\n';
-                            replyText += '  Sahur: ' + result.result.sahur + '\n';
-                            replyText += '  Imsak: ' + result.result.imsak + '\n';
-                            replyText += '  Subuh: ' + result.result.subuh + '\n';
-                            replyText += '  Terbit: ' + result.result.terbit + '\n';
-                            replyText += '  Dhuha: ' + result.result.dhuha + '\n';
-                            replyText += '  Dzuhur: ' + result.result.dzuhur + '\n';
-                            replyText += '  Ashar: ' + result.result.ashar + '\n';
-                            replyText += '  Maghrib: ' + result.result.maghrib + '\n';
-                            replyText += '  Isya: ' + result.result.isya + '\n';
-
-                            console.log(replyText);
-
-                            bot.sendMessage(chatId, replyText);
-                        } catch (error) {
-                            bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                let cityName;
+                if (args[1] === undefined) {
+                    bot.sendMessage(chatId, 'Silakan kirimkan lokasi Anda,atau balas pesan dengan /js namakota(Contoh : /js purbalingga).', {
+                        reply_markup: {
+                            keyboard: [
+                                [{
+                                    text: 'Kirim Lokasi',
+                                    request_location: true,
+                                }],
+                            ],
+                            resize_keyboard: true,
+                            one_time_keyboard: true
+                        },
+                    });
+                    bot.on('location', async (msg) => {
+                        const latitude = msg.location.latitude;
+                        const longitude = msg.location.longitude;
+                        async function getLokasi(lat, long) {
+                            const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json?key=${cfg.apiLok}&q=${lat}+${long}`);
+                            const cityName = response.data.results[0].components.county;
+                            return cityName;
                         }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        bot.sendMessage(chatId, 'Terjadi kesalahan saat mengambil informasi lokasi.');
-                    }
-                });
+                        cityName = await getLokasi(latitude, longitude);
+                    });
 
+                } else {
+                    cityName = args[1]
+                }
+                try {
+                    result = await apiHelperLol(`sholat/${cityName}`);
+                    // console.log(result)
+                    let replyText = 'Jadwal shalat ' + result.wilayah + '\n';
+                    replyText += '  Tanggal: ' + result.tanggal + '\n';
+                    replyText += '  Sahur: ' + result.sahur + '\n';
+                    replyText += '  Imsak: ' + result.imsak + '\n';
+                    replyText += '  Subuh: ' + result.subuh + '\n';
+                    replyText += '  Terbit: ' + result.terbit + '\n';
+                    replyText += '  Dhuha: ' + result.dhuha + '\n';
+                    replyText += '  Dzuhur: ' + result.dzuhur + '\n';
+                    replyText += '  Ashar: ' + result.ashar + '\n';
+                    replyText += '  Maghrib: ' + result.maghrib + '\n';
+                    replyText += '  Isya: ' + result.isya + '\n';
+
+                    // console.log(replyText);
+
+                    bot.sendMessage(chatId, replyText);
+                } catch (error) {
+                    bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                }
                 break
             default:
                 bot.sendMessage(chatId, `Perintah ${msg.text} tidak ditemukan,ketik /help untuk bantuan`);
