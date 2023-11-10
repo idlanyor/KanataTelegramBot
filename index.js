@@ -82,7 +82,7 @@ bot.on('callback_query', (query) => {
 // helper axios
 const apiHelperLol = async (endpoint, query) => {
     try {
-        const response = await axios.get(`${cfg.urlLol}/${endpoint}?apikey=${cfg.apiLol}`);
+        const response = await axios.get(`${cfg.urlLol}/${endpoint}apikey=${cfg.apiLol}`);
         return response.data.result;
     } catch (e) {
         console.error('Error: ', e);
@@ -105,7 +105,7 @@ bot.on('message', async (msg) => {
                 break
             case '/99':
                 try {
-                    result = await apiHelperLol("asmaulhusna");
+                    result = await apiHelperLol("asmaulhusna?");
                     replyText = `Indeks: ${result.index}\nLatin: ${result.latin}\nArab: ${result.ar}\nID: ${result.id}\nEN: ${result.en}`;
                     bot.sendMessage(chatId, replyText);
                 } catch (error) {
@@ -125,13 +125,7 @@ bot.on('message', async (msg) => {
                     bot.sendMessage(chatId, optQuran);
                     return;
                 }
-                try {
-                    const apiUrl = '';
-                    result = await performAxiosRequest(apiUrl);
-                    bot.sendMessage(chatId, replyText);
-                } catch (error) {
-                    bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
-                }
+
                 break;
             case '/js':
                 // Meminta lokasi pengguna
@@ -158,7 +152,7 @@ bot.on('message', async (msg) => {
                             const resultLok = response.data.results[0].components.county;
                             return resultLok;
                         }
-                        result = await apiHelperLol(`sholat/${cityName}`);
+                        result = await apiHelperLol(`sholat/${cityName}?`);
                         let replyText = 'Jadwal shalat ' + result.wilayah + '\n';
                         replyText += '  Tanggal: ' + result.tanggal + '\n';
                         replyText += '  Sahur: ' + result.sahur + '\n';
@@ -178,7 +172,7 @@ bot.on('message', async (msg) => {
                     cityName = args[1]
                 }
                 try {
-                    result = await apiHelperLol(`sholat/${cityName}`);
+                    result = await apiHelperLol(`sholat/${cityName}?`);
                     // console.log(result)
                     let replyText = 'Jadwal shalat ' + result.wilayah + '\n';
                     replyText += '  Tanggal: ' + result.tanggal + '\n';
@@ -197,6 +191,87 @@ bot.on('message', async (msg) => {
                     bot.sendMessage(chatId, replyText);
                 } catch (error) {
                     bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                }
+                break
+            case '/tt':
+                if (args[1] === undefined) {
+                    bot.sendMessage(chatId, 'Tiktok downloader no watermark \n Masukkan url tiktok (Contoh: /tt https://vt.tiktok.com/ZSwWCk5o/)')
+                } else {
+                    try {
+                        result = await apiHelperLol(`tiktok?url=${args[1]}&`);
+                        // result = await apiHelperLol(`tiktok?url=https://vt.tiktok.com/ZSwWCk5o/&`);
+                        console.log(result.thumbnail)
+                        replyText = `KANATA TIKTOK DOWNLOADER\n`
+                        replyText = `Title : ${result.title}\n`
+                        replyText += `Upload by : ${result.author.nickname}\n`
+                        replyText += `bentar yaa,video lagi dikirim`
+                        // console.log(result)
+                        bot.sendPhoto(chatId, result.thumbnail, { caption: replyText });
+                        await bot.sendVideo(chatId, result.link)
+                    } catch (error) {
+                        bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                    }
+                }
+                break
+            case '/tta':
+                if (args[1] === undefined) {
+                    bot.sendMessage(chatId, 'Tiktok audio downloader \n Masukkan url tiktok (Contoh: /tta https://vt.tiktok.com/ZSwWCk5o/)')
+                } else {
+                    try {
+                        result = await apiHelperLol(`tiktokmusic?url=${args[1]}&`);
+                        bot.sendMessage(chatId, "_Bentar yaa..Audio lagi dikirim_", { parse_mode: 'Markdown' });
+                        await bot.sendAudio(chatId, result)
+                    } catch (error) {
+                        bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                    }
+                }
+                break
+            case '/ig':
+                if (args[1] === undefined) {
+                    bot.sendMessage(chatId, 'Instagram Video downloader \n Masukkan url instagram')
+                } else {
+                    try {
+                        result = await apiHelperLol(`instagram?url=${args[1]}&`);
+                        // console.log(result[0]);
+                        bot.sendMessage(chatId, "_Bentar yaa..Video lagi dikirim_", { parse_mode: 'Markdown' });
+                        await bot.sendVideo(chatId, result[0])
+                    } catch (error) {
+                        bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                    }
+                }
+                break
+            case '/play':
+                if (args[1] === undefined) {
+                    bot.sendMessage(chatId, 'Youtube Player \n (Ex : /play usik feby putri)')
+                } else {
+                    try {
+                        result = await apiHelperLol(`ytplay?query=${args[1] + args[2]}&`);
+                        console.log(result.audio.link)
+                        replyText = `KANATA YOUTUBE PLAYER\n`
+                        replyText = `Title : ${result.title}\n`
+                        replyText += `Upload by : ${result.uploader}\n\n`
+                        replyText += `bentar yaa,audio lagi dikirim`
+                        bot.sendPhoto(chatId, result.thumbnail, { caption: replyText });
+                        // await bot.sendMessage(chatId, result.audio.link)
+                        convertWebMtoMP3(result.audio.link, chatId,result.title);
+                        function convertWebMtoMP3(inputFilePath, chatId,capt) {
+                            const outputFilePath = './libs/';  // Ganti dengan path untuk menyimpan file hasil konversi MP3
+
+                            ffmpeg()
+                                .input(inputFilePath)
+                                .audioCodec('libmp3lame')
+                                .toFormat('mp3')
+                                .on('end', () => {
+                                    bot.sendAudio(chatId, outputFilePath, { caption: capt });
+                                })
+                                .on('error', (err) => {
+                                    console.error('Error:', err);
+                                })
+                                .save(outputFilePath);
+                        }
+                    } catch (error) {
+                        bot.sendMessage(chatId, 'Terjadi kesalahan dalam mengurai permintaan, Silahkan coba beberapa saat lagi');
+                    }
                 }
                 break
             default:
