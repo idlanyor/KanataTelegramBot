@@ -152,12 +152,26 @@ bot.on('message', async (msg) => {
                     bot.on('location', async (msg) => {
                         const latitude = msg.location.latitude;
                         const longitude = msg.location.longitude;
+                        cityName = await getLokasi(latitude, longitude);
                         async function getLokasi(lat, long) {
                             const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json?key=${cfg.apiLok}&q=${lat}+${long}`);
-                            const cityName = response.data.results[0].components.county;
-                            return cityName;
+                            const resultLok = response.data.results[0].components.county;
+                            return resultLok;
                         }
-                        cityName = await getLokasi(latitude, longitude);
+                        result = await apiHelperLol(`sholat/${cityName}`);
+                        let replyText = 'Jadwal shalat ' + result.wilayah + '\n';
+                        replyText += '  Tanggal: ' + result.tanggal + '\n';
+                        replyText += '  Sahur: ' + result.sahur + '\n';
+                        replyText += '  Imsak: ' + result.imsak + '\n';
+                        replyText += '  Subuh: ' + result.subuh + '\n';
+                        replyText += '  Terbit: ' + result.terbit + '\n';
+                        replyText += '  Dhuha: ' + result.dhuha + '\n';
+                        replyText += '  Dzuhur: ' + result.dzuhur + '\n';
+                        replyText += '  Ashar: ' + result.ashar + '\n';
+                        replyText += '  Maghrib: ' + result.maghrib + '\n';
+                        replyText += '  Isya: ' + result.isya + '\n';
+
+                        bot.sendMessage(chatId, replyText);
                     });
 
                 } else {
